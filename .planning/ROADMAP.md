@@ -44,7 +44,7 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 02-01-PLAN.md — Create telemetry API endpoint and install Recharts (DASH-01, DASH-02)
+- [x] 02-01-PLAN.md — Create telemetry API endpoint and install Recharts (DASH-01, DASH-02)
 - [ ] 02-02-PLAN.md — Extend Dashboard.jsx with waveform chart, metrics table, and clinical styling (DASH-01, DASH-02, DASH-03, UI-01)
 
 ## Progress
@@ -55,4 +55,4 @@ Phases execute in numeric order: 1 → 2
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 2/2 | Complete    | 2026-03-29 |
-| 2. Dashboard | 0/2 | Not started | - |
+| 2. Dashboard | 1/2 | In progress | - |

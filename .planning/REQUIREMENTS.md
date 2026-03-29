@@ -12,8 +12,8 @@
 
 ### Dashboard
 
-- [ ] **DASH-01**: Dashboard displays a continuous waveform chart (X: time across past 7 days, Y: correction angle 5–130°)
-- [ ] **DASH-02**: Dashboard displays a metrics table showing average X-axis deviation and average Y-axis deviation for the past 7 days
+- [x] **DASH-01**: Dashboard displays a continuous waveform chart (X: time across past 7 days, Y: correction angle 5–130°)
+- [x] **DASH-02**: Dashboard displays a metrics table showing average X-axis deviation and average Y-axis deviation for the past 7 days
 - [ ] **DASH-03**: Dashboard shows the profile name/identity clearly
 
 ### Data
@@ -59,8 +59,8 @@
 |-------------|-------|--------|
 | PROF-01 | Phase 1 | Complete |
 | PROF-02 | Phase 1 | Complete |
-| DASH-01 | Phase 2 | Pending |
-| DASH-02 | Phase 2 | Pending |
+| DASH-01 | Phase 2 | Complete |
+| DASH-02 | Phase 2 | Complete |
 | DASH-03 | Phase 2 | Pending |
 | DATA-01 | Phase 1 | Complete |
 | DATA-02 | Phase 1 | Complete |
