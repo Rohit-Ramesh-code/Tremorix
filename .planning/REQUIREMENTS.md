@@ -1,7 +1,7 @@
 # Requirements: Tremorix Dashboard
 
 **Defined:** 2026-03-28
-**Core Value:** A clinician or observer can select any profile and immediately see a clear, readable picture of that person's tremor stabilization history over the past 7 days..
+**Core Value:** A clinician or observer can select any profile and immediately see a clear, readable picture of that person's tremor stabilization history over the past 7 days.
 
 ## v1 Requirements
 
