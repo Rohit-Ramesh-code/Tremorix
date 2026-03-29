@@ -22,6 +22,10 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const avgAngle = telemetry.length
+    ? (telemetry.reduce((sum, r) => sum + r.correction_angle, 0) / telemetry.length).toFixed(1)
+    : '—';
+
   useEffect(() => {
     fetch('/api/profiles')
       .then(res => res.json())
@@ -110,6 +114,45 @@ export default function Dashboard() {
             </ResponsiveContainer>
           </div>
         )}
+      </div>
+      <div style={CARD_STYLE}>
+        <p style={{
+          fontSize: '0.8rem',
+          fontWeight: 600,
+          color: '#666',
+          letterSpacing: '0.06em',
+          textTransform: 'uppercase',
+          margin: '0 0 16px 0',
+        }}>
+          Averages — Past 7 Days
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <tbody>
+            {[
+              ['Avg X-axis deviation', avgAngle],
+              ['Avg Y-axis deviation', avgAngle],
+            ].map(([label, val]) => (
+              <tr key={label} style={{ borderBottom: '1px solid #f0f0f0' }}>
+                <td style={{
+                  padding: '12px 0',
+                  color: '#1a1a2e',
+                  fontSize: '0.95rem',
+                }}>
+                  {label}
+                </td>
+                <td style={{
+                  padding: '12px 0',
+                  color: '#1a1a2e',
+                  fontWeight: 600,
+                  fontSize: '0.95rem',
+                  textAlign: 'right',
+                }}>
+                  {val !== '—' ? `${val}°` : val}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );
