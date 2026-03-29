@@ -8,7 +8,10 @@ CREATE TABLE IF NOT EXISTS telemetry (
   id               INTEGER PRIMARY KEY AUTOINCREMENT,
   profile_id       INTEGER NOT NULL REFERENCES profiles(id),
   recorded_at      TEXT NOT NULL,
-  correction_angle REAL NOT NULL
+  pitch            REAL NOT NULL,
+  roll             REAL NOT NULL,
+  sp               REAL NOT NULL,
+  sr               REAL NOT NULL
 );
 
 CREATE INDEX IF NOT EXISTS idx_telemetry_profile_time

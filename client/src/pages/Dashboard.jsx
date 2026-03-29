@@ -22,19 +22,29 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const avgAngle = telemetry.length
-    ? (telemetry.reduce((sum, r) => sum + r.correction_angle, 0) / telemetry.length).toFixed(1)
+  const avgRoll = telemetry.length
+    ? (telemetry.reduce((sum, r) => sum + Math.abs(r.roll), 0) / telemetry.length).toFixed(1)
     : '—';
 
+  const avgPitch = telemetry.length
+    ? (telemetry.reduce((sum, r) => sum + Math.abs(r.pitch), 0) / telemetry.length).toFixed(1)
+    : '—';
+
+  // Compute combined magnitude vector for severity and frequency metrics
+  const telemetryWithMag = telemetry.map(r => ({
+    ...r,
+    magnitude: Math.sqrt(Math.pow(r.pitch, 2) + Math.pow(r.roll, 2))
+  }));
+
   const tremorEpisodeRate = (() => {
-    if (!telemetry.length) return '—';
-    const mean = telemetry.reduce((sum, r) => sum + r.correction_angle, 0) / telemetry.length;
-    const variance = telemetry.reduce((sum, r) => sum + Math.pow(r.correction_angle - mean, 2), 0) / telemetry.length;
+    if (!telemetryWithMag.length) return '—';
+    const mean = telemetryWithMag.reduce((sum, r) => sum + r.magnitude, 0) / telemetryWithMag.length;
+    const variance = telemetryWithMag.reduce((sum, r) => sum + Math.pow(r.magnitude - mean, 2), 0) / telemetryWithMag.length;
     const threshold = mean + Math.sqrt(variance);
     let episodes = 0;
     let wasAbove = false;
-    for (const r of telemetry) {
-      const above = r.correction_angle > threshold;
+    for (const r of telemetryWithMag) {
+      const above = r.magnitude > threshold;
       if (above && !wasAbove) episodes++;
       wasAbove = above;
     }
@@ -42,13 +52,13 @@ export default function Dashboard() {
   })();
 
   const severityAvgPeak = (() => {
-    if (telemetry.length < 3) return '—';
+    if (telemetryWithMag.length < 3) return '—';
     let peakSum = 0;
     let peakCount = 0;
-    for (let i = 1; i < telemetry.length - 1; i++) {
-      const prev = telemetry[i - 1].correction_angle;
-      const curr = telemetry[i].correction_angle;
-      const next = telemetry[i + 1].correction_angle;
+    for (let i = 1; i < telemetryWithMag.length - 1; i++) {
+      const prev = telemetryWithMag[i - 1].magnitude;
+      const curr = telemetryWithMag[i].magnitude;
+      const next = telemetryWithMag[i + 1].magnitude;
       if (curr > prev && curr > next) {
         peakSum += curr;
         peakCount++;
@@ -102,7 +112,7 @@ export default function Dashboard() {
           textTransform: 'uppercase',
           margin: '0 0 16px 0',
         }}>
-          Correction Angle — Past 7 Days
+          Mechanical Deviation (Pitch & Roll) — Past 7 Days
         </p>
         {loading && (
           <p style={{ color: '#666', fontSize: '0.9rem' }}>Loading data…</p>
@@ -122,22 +132,32 @@ export default function Dashboard() {
                   interval="preserveStartEnd"
                 />
                 <YAxis
-                  domain={[5, 130]}
+                  domain={['dataMin - 5', 'dataMax + 5']}
                   allowDataOverflow
-                  tickFormatter={(v) => `${v}°`}
+                  tickFormatter={(v) => `${v.toFixed(0)}°`}
                   tick={{ fontSize: 11, fill: '#666' }}
                   width={44}
                 />
                 <Tooltip
-                  formatter={(v) => [`${Number(v).toFixed(1)}°`, 'Correction Angle']}
+                  formatter={(v, name) => [`${Number(v).toFixed(2)}°`, name]}
                   labelFormatter={(v) => new Date(v).toLocaleString()}
                   contentStyle={{ fontSize: '0.8rem', border: '1px solid #e0e0e0' }}
                 />
-                <ReferenceLine y={30} stroke="black" strokeWidth={2} />
+                <ReferenceLine y={0} stroke="#999" strokeWidth={1} strokeDasharray="3 3" />
                 <Line
+                  name="Roll (X-axis)"
                   type="monotone"
-                  dataKey="correction_angle"
+                  dataKey="roll"
                   stroke="#0D8ABC"
+                  dot={false}
+                  strokeWidth={1}
+                  isAnimationActive={false}
+                />
+                <Line
+                  name="Pitch (Y-axis)"
+                  type="monotone"
+                  dataKey="pitch"
+                  stroke="#2E7D32"
                   dot={false}
                   strokeWidth={1}
                   isAnimationActive={false}
@@ -161,8 +181,8 @@ export default function Dashboard() {
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <tbody>
             {[
-              ['Avg X-axis deviation', avgAngle, (v) => v !== '—' ? `${v}°` : v],
-              ['Avg Y-axis deviation', avgAngle, (v) => v !== '—' ? `${v}°` : v],
+              ['Avg X-axis deviation (Roll)', avgRoll, (v) => v !== '—' ? `${v}°` : v],
+              ['Avg Y-axis deviation (Pitch)', avgPitch, (v) => v !== '—' ? `${v}°` : v],
               ['Tremor frequency', tremorEpisodeRate, (v) => v !== '—' ? `${v} episodes/hr` : v],
               ['Severity', severityAvgPeak, (v) => v !== '—' ? `${v}° Avg Peak` : v],
             ].map(([label, val, fmt]) => (

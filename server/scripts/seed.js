@@ -43,10 +43,10 @@ function seedProfile(profileId) {
 
   const dayFactors = Array.from({ length: 8 }, () => 0.6 + Math.random() * 0.6);
   const insert = db.prepare(
-    'INSERT INTO telemetry (profile_id, recorded_at, correction_angle) VALUES (?, ?, ?)'
+    'INSERT INTO telemetry (profile_id, recorded_at, pitch, roll, sp, sr) VALUES (?, ?, ?, ?, ?, ?)'
   );
   const insertMany = db.transaction((rows) => {
-    for (const row of rows) insert.run(row[0], row[1], row[2]);
+    for (const row of rows) insert.run(row[0], row[1], row[2], row[3], row[4], row[5]);
   });
 
   const rows = [];
@@ -61,10 +61,22 @@ function seedProfile(profileId) {
     const target = getTargetAngle(hour, dayFactor);
     smoothedAngle = 0.85 * smoothedAngle + 0.15 * target;
 
-    const noise = (Math.random() + Math.random() - 1) * 4;
-    const angle = Math.max(5, Math.min(130, smoothedAngle + noise));
+    const noise = (Math.random() + Math.random() - 1) * 2;
+    const magnitude = Math.max(0, smoothedAngle + noise) / 3; // Reduced scale to match real device ~15 degree swings
 
-    rows.push([profileId, current.toISOString(), parseFloat(angle.toFixed(2))]);
+    const pitchBase = -8 + Math.sin(dayIndex) * 5;
+    const rollBase = -6 + Math.cos(dayIndex) * 5;
+
+    const pSign = Math.random() > 0.5 ? 1 : -1;
+    const rSign = Math.random() > 0.5 ? 1 : -1;
+
+    const pitch = parseFloat((pitchBase + magnitude * 0.7 * pSign).toFixed(2));
+    const roll = parseFloat((rollBase + magnitude * 0.7 * rSign).toFixed(2));
+
+    const sp = parseFloat((90 - pitch * 1.5).toFixed(2));
+    const sr = parseFloat((90 - roll * 1.5).toFixed(2));
+
+    rows.push([profileId, current.toISOString(), pitch, roll, sp, sr]);
     current = new Date(current.getTime() + 30 * 1000);
   }
 

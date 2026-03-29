@@ -5,7 +5,7 @@ module.exports = (db) => {
   router.get('/', (req, res) => {
     const { id } = req.params;
     const rows = db.prepare(`
-      SELECT recorded_at, correction_angle
+      SELECT recorded_at, pitch, roll, sp, sr
       FROM telemetry
       WHERE profile_id = ?
         AND recorded_at >= datetime('now', '-7 days')
