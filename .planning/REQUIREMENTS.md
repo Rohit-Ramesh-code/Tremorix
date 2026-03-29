@@ -14,7 +14,7 @@
 
 - [x] **DASH-01**: Dashboard displays a continuous waveform chart (X: time across past 7 days, Y: correction angle 5–130°)
 - [x] **DASH-02**: Dashboard displays a metrics table showing average X-axis deviation and average Y-axis deviation for the past 7 days
-- [ ] **DASH-03**: Dashboard shows the profile name/identity clearly
+- [x] **DASH-03**: Dashboard shows the profile name/identity clearly
 
 ### Data
 
@@ -23,7 +23,7 @@
 
 ### UI/UX
 
-- [ ] **UI-01**: Interface follows a medical/clinical aesthetic — clean, white, professional typography
+- [x] **UI-01**: Interface follows a medical/clinical aesthetic — clean, white, professional typography
 
 ## v2 Requirements
 
@@ -61,10 +61,10 @@
 | PROF-02 | Phase 1 | Complete |
 | DASH-01 | Phase 2 | Complete |
 | DASH-02 | Phase 2 | Complete |
-| DASH-03 | Phase 2 | Pending |
+| DASH-03 | Phase 2 | Complete |
 | DATA-01 | Phase 1 | Complete |
 | DATA-02 | Phase 1 | Complete |
-| UI-01 | Phase 2 | Pending |
+| UI-01 | Phase 2 | Complete |
 
 **Coverage:**
 - v1 requirements: 8 total

@@ -13,7 +13,7 @@ Build a web-based demo dashboard for a handheld tremor stabilization device. Pha
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation** - Seeded synthetic data and profile selection screen (completed 2026-03-29)
-- [ ] **Phase 2: Dashboard** - Clinical waveform display, metrics table, and medical UI
+- [x] **Phase 2: Dashboard** - Clinical waveform display, metrics table, and medical UI (completed 2026-03-29)
 
 ## Phase Details
 
@@ -55,4 +55,4 @@ Phases execute in numeric order: 1 → 2
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 2/2 | Complete    | 2026-03-29 |
-| 2. Dashboard | 1/2 | In progress | - |
+| 2. Dashboard | 2/2 | Complete   | 2026-03-29 |
