@@ -4,7 +4,8 @@
       "Skill(gsd:new-project)",
       "Bash(node:*)",
       "WebSearch",
-      "Bash(ls C:/Users/rohit/ROHIT/Tremorix/.planning/phases/01-foundation/*VERIFICATION*)"
+      "Bash(ls C:/Users/rohit/ROHIT/Tremorix/.planning/phases/01-foundation/*VERIFICATION*)",
+      "Bash(ls C:/Users/rohit/ROHIT/Tremorix/.planning/phases/02-dashboard/*VERIFICATION*)"
     ]
   }
 }
