@@ -1,0 +1,11 @@
+{
+  "name": "tremorix",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
+    "seed": "node server/scripts/seed.js"
+  },
+  "devDependencies": {
+    "concurrently": "^8.0.0"
+  }
+}
