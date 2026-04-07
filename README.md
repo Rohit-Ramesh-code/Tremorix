@@ -280,18 +280,19 @@ The main clinical view for each profile:
   - Avg X-axis deviation (mean correction angle, 1 d.p.)
   - Avg Y-axis deviation (same signal, shown per-axis)
   - Tremor frequency (episode rate, expressed as `N episodes/hr`)
+- **PDF Export** — Generate high-fidelity clinical reports using `jsPDF` and `html2canvas`. Reports include high-resolution snapshots of the waveform charts and metrics, automatically populated with patient metadata and generation timestamps. Special rendering logic ensures that CSS filters (like backdrop-blur) and responsive SVG containers are accurately captured in the final document.
 
-### Exercises
+The exercise system serves dual purposes based on the logged-in user's role:
 
-Five gentle hand exercises designed for tremor management:
+- **For Patients:** Five gentle hand exercises designed for tremor management. Completing an exercise triggers a confetti animation and increments the weekly counter. Completed exercises are visually distinguished and their buttons are disabled.
+- **For Doctors:** A clinician interface for routine management. Doctors can browse the exercise library and use a dynamic **Assign to Patient** dropdown (populated live from the profile database) to add specific activities to a patient's plan.
 
+**Exercise Library:**
 1. Gentle finger stretch
 2. Breathing pause
 3. Slow grip practice
 4. Wrist rotations
 5. Thumb touches
-
-Completing an exercise triggers a confetti animation and increments the weekly counter. Completed exercises are visually distinguished and their buttons are disabled.
 
 ### Messages
 
