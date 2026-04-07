@@ -17,25 +17,48 @@ export default function Dashboard() {
   const [error, setError] = useState(null);
   const [isExporting, setIsExporting] = useState(false);
   const dashboardRef = useRef(null);
+  const exportRef = useRef(null);
 
   const handleExportPDF = async () => {
-    if (!dashboardRef.current || !profile) return;
+    if (!exportRef.current || !profile) return;
     setIsExporting(true);
     try {
-      // Small timeout to ensure DOM is settled
-      await new Promise(resolve => setTimeout(resolve, 100));
-      const canvas = await html2canvas(dashboardRef.current, {
+      // Store current scroll to restore later, and scroll to top
+      // html2canvas commonly renders blank canvases if the window is scrolled down
+      const originalScrollTop = document.documentElement.scrollTop;
+      document.documentElement.scrollTop = 0;
+
+      // Small timeout to ensure DOM is settled after scroll and re-render
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      const canvas = await html2canvas(exportRef.current, {
         scale: 2,
         useCORS: true,
         logging: true,
         allowTaint: true,
-        backgroundColor: '#ffffff'
+        backgroundColor: '#ffffff',
+        width: exportRef.current.offsetWidth,
+        height: exportRef.current.offsetHeight,
       });
+
+      // Restore scroll
+      document.documentElement.scrollTop = originalScrollTop;
+
       const imgData = canvas.toDataURL('image/png', 1.0);
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+
+      pdf.setFontSize(16);
+      pdf.setTextColor(13, 142, 188); // Teal color matching the app
+      pdf.text(`Tremorix Report: ${profile.name}`, 15, 15);
+      
+      pdf.setFontSize(10);
+      pdf.setTextColor(100, 100, 100);
+      pdf.text(`Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}`, 15, 22);
+
+      // Add the image below the header text
+      pdf.addImage(imgData, 'PNG', 10, 30, pdfWidth - 20, pdfHeight * ((pdfWidth - 20) / pdfWidth));
       pdf.save(`Tremorix_Report_${profile.name.replace(/\s+/g, '_')}.pdf`);
     } catch (err) {
       console.error('Failed to export PDF:', err);
@@ -152,80 +175,131 @@ export default function Dashboard() {
       </header>
 
       <main className="px-4 sm:px-8 md:px-12 py-6 space-y-8 max-w-none mx-auto w-full">
-        {/* Chart Card */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-5 shadow-sm border border-gray-100">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Correction Frequency</h3>
+        
+        {/* Export Container: Wraps Chart & Metrics */}
+        <div ref={exportRef} className={`space-y-8 p-4 -m-4 rounded-3xl ${isExporting ? 'bg-white' : 'bg-gradient-to-b from-teal-50 to-blue-50'}`}>
+          {/* Chart Card */}
+          <div className={`rounded-2xl p-5 shadow-sm border border-gray-100 ${isExporting ? 'bg-white' : 'bg-white/80 backdrop-blur-sm'}`}>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Correction Frequency</h3>
 
-          {loading && <p className="text-gray-500 text-sm mb-4">Loading telemetry...</p>}
-          {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
+            {loading && <p className="text-gray-500 text-sm mb-4">Loading telemetry...</p>}
+            {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
 
-          {!loading && !error && (
-            <div className="w-full h-[400px] md:h-[500px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={telemetry} margin={{ top: 8, right: 24, bottom: 8, left: 8 }}>
-                  <CartesianGrid vertical={false} stroke="#E5E7EB" strokeDasharray="3 3" />
-                  <XAxis
-                    dataKey="recorded_at"
-                    tickFormatter={(v) => new Date(v).toLocaleDateString('en-US', { weekday: 'short' })}
-                    tick={{ fontSize: 11, fill: '#6B7280' }}
-                    interval="preserveStartEnd"
-                    axisLine={false}
-                    tickLine={false}
-                  />
-                  <YAxis
-                    domain={['dataMin - 5', 'dataMax + 5']}
-                    allowDataOverflow
-                    tickFormatter={(v) => `${v.toFixed(0)}°`}
-                    tick={{ fontSize: 11, fill: '#6B7280' }}
-                    width={44}
-                    axisLine={false}
-                    tickLine={false}
-                  />
-                  <Tooltip
-                    formatter={(v, name) => [`${Number(v).toFixed(2)}°`, name]}
-                    labelFormatter={(v) => new Date(v).toLocaleString()}
-                    contentStyle={{ fontSize: '0.8rem', border: '1px solid #e0e0e0', borderRadius: '8px' }}
-                  />
-                  <ReferenceLine y={0} stroke="#9CA3AF" strokeWidth={1} strokeDasharray="3 3" />
-                  <Line
-                    name="Roll (X-axis)"
-                    type="monotone"
-                    dataKey="roll"
-                    stroke="#0D8ABC"
-                    dot={false}
-                    strokeWidth={2}
-                    isAnimationActive={false}
-                  />
-                  <Line
-                    name="Pitch (Y-axis)"
-                    type="monotone"
-                    dataKey="pitch"
-                    stroke="#14B8A6"
-                    dot={false}
-                    strokeWidth={2}
-                    isAnimationActive={false}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          )}
-        </div>
-
-        {/* Metrics Card */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-5 shadow-sm border border-gray-100">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Metrics Dashboard</h3>
-          <div className="grid grid-cols-2 gap-4">
-            {[
-              ['Avg Roll', avgRoll, (v) => v !== '—' ? `${v}°` : v],
-              ['Avg Pitch', avgPitch, (v) => v !== '—' ? `${v}°` : v],
-              ['Motion Freq.', tremorEpisodeRate, (v) => v !== '—' ? `${v}/hr` : v],
-              ['Motion Activity', severityAvgPeak, (v) => v !== '—' ? `${v}° Peak` : v],
-            ].map(([label, val, fmt]) => (
-              <div key={label} className="bg-teal-50/50 rounded-xl p-3 border border-teal-100/50 flex flex-col items-center justify-center">
-                <p className="text-[11px] text-teal-700/80 mb-1 font-medium">{label}</p>
-                <p className="font-semibold text-gray-900 text-lg leading-none">{fmt(val)}</p>
+            {!loading && !error && (
+              <div className={`w-full ${isExporting ? (!exportRef.current ? 'h-[400px]' : '') : 'h-[400px] md:h-[500px]'}`} style={isExporting ? { width: exportRef.current?.offsetWidth || 800, height: 400 } : {}}>
+                {isExporting ? (
+                  <LineChart width={exportRef.current?.offsetWidth || 800} height={400} data={telemetry} margin={{ top: 8, right: 24, bottom: 8, left: 8 }}>
+                    <CartesianGrid vertical={false} stroke="#E5E7EB" strokeDasharray="3 3" />
+                    <XAxis
+                      dataKey="recorded_at"
+                      tickFormatter={(v) => new Date(v).toLocaleDateString('en-US', { weekday: 'short' })}
+                      tick={{ fontSize: 11, fill: '#6B7280' }}
+                      interval="preserveStartEnd"
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <YAxis
+                      domain={['dataMin - 5', 'dataMax + 5']}
+                      allowDataOverflow
+                      tickFormatter={(v) => `${v.toFixed(0)}°`}
+                      tick={{ fontSize: 11, fill: '#6B7280' }}
+                      width={44}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <Tooltip
+                      formatter={(v, name) => [`${Number(v).toFixed(2)}°`, name]}
+                      labelFormatter={(v) => new Date(v).toLocaleString()}
+                      contentStyle={{ fontSize: '0.8rem', border: '1px solid #e0e0e0', borderRadius: '8px' }}
+                    />
+                    <ReferenceLine y={0} stroke="#9CA3AF" strokeWidth={1} strokeDasharray="3 3" />
+                    <Line
+                      name="Roll (X-axis)"
+                      type="monotone"
+                      dataKey="roll"
+                      stroke="#0D8ABC"
+                      dot={false}
+                      strokeWidth={2}
+                      isAnimationActive={false}
+                    />
+                    <Line
+                      name="Pitch (Y-axis)"
+                      type="monotone"
+                      dataKey="pitch"
+                      stroke="#14B8A6"
+                      dot={false}
+                      strokeWidth={2}
+                      isAnimationActive={false}
+                    />
+                  </LineChart>
+                ) : (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={telemetry} margin={{ top: 8, right: 24, bottom: 8, left: 8 }}>
+                      <CartesianGrid vertical={false} stroke="#E5E7EB" strokeDasharray="3 3" />
+                      <XAxis
+                        dataKey="recorded_at"
+                        tickFormatter={(v) => new Date(v).toLocaleDateString('en-US', { weekday: 'short' })}
+                        tick={{ fontSize: 11, fill: '#6B7280' }}
+                        interval="preserveStartEnd"
+                        axisLine={false}
+                        tickLine={false}
+                      />
+                      <YAxis
+                        domain={['dataMin - 5', 'dataMax + 5']}
+                        allowDataOverflow
+                        tickFormatter={(v) => `${v.toFixed(0)}°`}
+                        tick={{ fontSize: 11, fill: '#6B7280' }}
+                        width={44}
+                        axisLine={false}
+                        tickLine={false}
+                      />
+                      <Tooltip
+                        formatter={(v, name) => [`${Number(v).toFixed(2)}°`, name]}
+                        labelFormatter={(v) => new Date(v).toLocaleString()}
+                        contentStyle={{ fontSize: '0.8rem', border: '1px solid #e0e0e0', borderRadius: '8px' }}
+                      />
+                      <ReferenceLine y={0} stroke="#9CA3AF" strokeWidth={1} strokeDasharray="3 3" />
+                      <Line
+                        name="Roll (X-axis)"
+                        type="monotone"
+                        dataKey="roll"
+                        stroke="#0D8ABC"
+                        dot={false}
+                        strokeWidth={2}
+                        isAnimationActive={false}
+                      />
+                      <Line
+                        name="Pitch (Y-axis)"
+                        type="monotone"
+                        dataKey="pitch"
+                        stroke="#14B8A6"
+                        dot={false}
+                        strokeWidth={2}
+                        isAnimationActive={false}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                )}
               </div>
-            ))}
+            )}
+          </div>
+
+          {/* Metrics Card */}
+          <div className={`rounded-2xl p-5 shadow-sm border border-gray-100 ${isExporting ? 'bg-white' : 'bg-white/80 backdrop-blur-sm'}`}>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Metrics Dashboard</h3>
+            <div className="grid grid-cols-2 gap-4">
+              {[
+                ['Avg Roll', avgRoll, (v) => v !== '—' ? `${v}°` : v],
+                ['Avg Pitch', avgPitch, (v) => v !== '—' ? `${v}°` : v],
+                ['Motion Freq.', tremorEpisodeRate, (v) => v !== '—' ? `${v}/hr` : v],
+                ['Motion Activity', severityAvgPeak, (v) => v !== '—' ? `${v}° Peak` : v],
+              ].map(([label, val, fmt]) => (
+                <div key={label} className={`rounded-xl p-3 border border-teal-100/50 flex flex-col items-center justify-center ${isExporting ? 'bg-teal-50' : 'bg-teal-50/50'}`}>
+                  <p className="text-[11px] text-teal-700/80 mb-1 font-medium">{label}</p>
+                  <p className="font-semibold text-gray-900 text-lg leading-none">{fmt(val)}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
